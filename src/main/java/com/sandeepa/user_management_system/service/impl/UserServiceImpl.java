@@ -4,6 +4,7 @@ import com.sandeepa.user_management_system.dto.request.CreateUserRequest;
 import com.sandeepa.user_management_system.dto.request.UpdateUserRequest;
 import com.sandeepa.user_management_system.dto.response.UserResponse;
 import com.sandeepa.user_management_system.exception.DuplicateEmailException;
+import com.sandeepa.user_management_system.exception.EntryNotFoundException;
 import com.sandeepa.user_management_system.model.User;
 import com.sandeepa.user_management_system.repo.UserRepo;
 import com.sandeepa.user_management_system.service.UserService;
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> getAllUsers() {
-        List<User> users = userRepo.findAll();
+        List<User> users = userRepo.findAllByOrderByCreatedAtDesc();
         return users.stream().map(user -> modelMapper.map(user, UserResponse.class)).collect(Collectors.toList());
     }
 
@@ -50,16 +51,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getUserById(Long id) {
-        return null;
+        User user = userRepo.findById(id).orElseThrow(()-> new EntryNotFoundException("User not found"));
+        return modelMapper.map(user, UserResponse.class);
     }
 
     @Override
     public UserResponse updateUser(Long id, UpdateUserRequest req) {
-        return null;
+        User existing = userRepo.findById(id).orElseThrow(()-> new EntryNotFoundException("User not found"));
+
+        //check email duplication
+        if(!existing.getEmail().equals(req.getEmail())) {
+            if(userRepo.existsByEmail(req.getEmail())) {
+                throw new DuplicateEmailException("Email already exists");
+            }
+        }
+
+        if(req.getName() != null) existing.setName(req.getName());
+        if(req.getEmail() != null) existing.setEmail(req.getEmail());
+        if(req.getStatus() != null) existing.setStatus(req.getStatus());
+
+        User saved  = userRepo.save(existing);
+        return modelMapper.map(saved, UserResponse.class);
     }
 
     @Override
     public void deleteUser(Long id) {
-
+        userRepo.deleteById(id);
     }
 }

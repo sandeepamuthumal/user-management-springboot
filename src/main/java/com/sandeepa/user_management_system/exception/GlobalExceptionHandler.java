@@ -34,6 +34,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
     }
 
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ApiError> duplicateEmail(DuplicateEmailException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ApiError(false, ex.getMessage(), null));
+    }
+
+    @ExceptionHandler(EntryNotFoundException.class)
+    public ResponseEntity<ApiError> duplicateEmail(EntryNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ApiError(false, ex.getMessage(), null));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleOthers(Exception ex) {
 
@@ -42,10 +56,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiError);
     }
 
-    @ExceptionHandler(DuplicateEmailException.class)
-    public ResponseEntity<ApiError> duplicateEmail(DuplicateEmailException ex) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError(false, ex.getMessage(), null));
-    }
 }
