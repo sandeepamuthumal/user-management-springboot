@@ -18,7 +18,7 @@ import java.time.Instant;
 
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -31,6 +31,10 @@ public class User {
 
     @Column(name = "status")
     private boolean status = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_type_id", nullable = false)
+    private UserType userType;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

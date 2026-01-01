@@ -10,6 +10,7 @@ public class UserResponse {
     private String name;
     private String email;
     private Boolean status;
+    private String userType;
     private Instant createdAt;
     private Instant updatedAt;
 }
