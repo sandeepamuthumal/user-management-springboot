@@ -10,12 +10,19 @@ import com.sandeepa.user_management_system.model.UserType;
 import com.sandeepa.user_management_system.repo.UserRepo;
 import com.sandeepa.user_management_system.repo.UserTypeRepo;
 import com.sandeepa.user_management_system.service.UserService;
+import com.sandeepa.user_management_system.specification.UserSpecification;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,9 +47,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> getAllUsers() {
-        List<User> users = userRepo.findAllByOrderByCreatedAtDesc();
-        return users.stream().map(user -> {
+    public Page<UserResponse> getAllUsers(
+            Boolean status,
+            String userType,
+            String search,
+            int page,
+            int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        Specification<User> spec = Specification.allOf(
+                UserSpecification.hasStatus(status),
+                UserSpecification.hasUserType(userType),
+                UserSpecification.hasSearch(search)
+        );
+
+        Page<User> userPage = userRepo.findAll(spec,pageable);
+
+        return userPage.map(user -> {
             UserResponse res = new UserResponse();
             res.setId(user.getId());
             res.setName(user.getName());
@@ -52,7 +74,7 @@ public class UserServiceImpl implements UserService {
             res.setCreatedAt(user.getCreatedAt());
             res.setUpdatedAt(user.getUpdatedAt());
             return res;
-        }).collect(Collectors.toList());
+        });
     }
 
     @Override
